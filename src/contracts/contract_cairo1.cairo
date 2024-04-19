@@ -8,7 +8,7 @@ trait HackTemplateABI<TContractState> {
     );
     fn check_eth_threshold(self: @TContractState, threshold: u32) -> bool;
     fn get_asset_price(self: @TContractState, asset_id: felt252) -> PragmaPricesResponse;
-    fn realized_volatility(self: @TContractState, startTimeInS: u64) -> (u128, u32);
+    fn realized_volatility(self: @TContractState, start_time_in_seconds: u64) -> (u128, u32);
     fn get_pragma_contract(self: @TContractState) -> ContractAddress;
     fn get_summary_stats_contract(self: @TContractState) -> ContractAddress;
     fn get_data_for_sources(self: @TContractState, asset_id: felt252) -> PragmaPricesResponse;
@@ -127,7 +127,7 @@ mod HackTemplate {
             return output;
         }
 
-        fn realized_volatility(self: @ContractState, startTimeInS: u64) -> (u128, u32) {
+        fn realized_volatility(self: @ContractState, start_time_in_seconds: u64) -> (u128, u32) {
             let oracle_dispatcher = ISummaryStatsABIDispatcher {
                 contract_address: self.summary_stats.read()
             };
@@ -135,7 +135,7 @@ mod HackTemplate {
             let key = 'ETH/USD';
             let timestamp = starknet::get_block_timestamp();
 
-            let start = timestamp - startTimeInS; // 1 month ago
+            let start = timestamp - start_time_in_seconds;
             let end = timestamp; // now
 
             let num_samples = 200; // Maximum 200 because of Cairo Steps limit

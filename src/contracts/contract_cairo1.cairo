@@ -1,4 +1,5 @@
 use starknet::ContractAddress;
+use pragma_lib::types::{PragmaPricesResponse};
 
 #[starknet::interface]
 trait HackTemplateABI<TContractState> {
@@ -6,10 +7,11 @@ trait HackTemplateABI<TContractState> {
         ref self: TContractState, pragma_contract: ContractAddress, summary_stats: ContractAddress
     );
     fn check_eth_threshold(self: @TContractState, threshold: u32) -> bool;
-    fn get_asset_price(self: @TContractState, asset_id: felt252) -> u128;
-    fn realized_volatility(self: @TContractState) -> (u128, u32);
+    fn get_asset_price(self: @TContractState, asset_id: felt252) -> PragmaPricesResponse;
+    fn realized_volatility(self: @TContractState, startTimeInS: u64) -> (u128, u32);
     fn get_pragma_contract(self: @TContractState) -> ContractAddress;
     fn get_summary_stats_contract(self: @TContractState) -> ContractAddress;
+    fn get_data_for_sources(self: @TContractState, asset_id: felt252) -> PragmaPricesResponse;
 }
 
 
@@ -90,7 +92,29 @@ mod HackTemplate {
             return shifted_threshold <= output.price;
         }
 
-        fn get_asset_price(self: @ContractState, asset_id: felt252) -> u128 {
+        fn get_data_for_sources(
+            self: @ContractState, asset_id: felt252
+        ) -> PragmaPricesResponse {
+            // Retrieve the oracle dispatcher
+            let oracle_dispatcher = IPragmaABIDispatcher {
+                contract_address: self.pragma_contract.read()
+            };
+
+            // We only care about DEFILLAMA and COINBASE
+            let defillama: felt252 = 'DEFILLAMA';
+            let coinbase: felt252 = 'COINBASE';
+
+            let mut sources = array![defillama, coinbase];
+            // Call the Oracle contract
+            let output: PragmaPricesResponse = oracle_dispatcher
+                .get_data_for_sources(
+                    DataType::SpotEntry(asset_id), AggregationMode::Median(()), sources.span()
+                );
+
+            return output;
+        }
+
+        fn get_asset_price(self: @ContractState, asset_id: felt252) -> PragmaPricesResponse {
             // Retrieve the oracle dispatcher
             let oracle_dispatcher = IPragmaABIDispatcher {
                 contract_address: self.pragma_contract.read()
@@ -100,10 +124,10 @@ mod HackTemplate {
             let output: PragmaPricesResponse = oracle_dispatcher
                 .get_data_median(DataType::SpotEntry(asset_id));
 
-            return output.price;
+            return output;
         }
 
-        fn realized_volatility(self: @ContractState, startTimeInS: u128) -> (u128, u32) {
+        fn realized_volatility(self: @ContractState, startTimeInS: u64) -> (u128, u32) {
             let oracle_dispatcher = ISummaryStatsABIDispatcher {
                 contract_address: self.summary_stats.read()
             };
@@ -123,11 +147,6 @@ mod HackTemplate {
                     end.into(),
                     num_samples,
                     AggregationMode::Median(())
-                );
-
-            let (mean, mean_decimals) = oracle_dispatcher
-                .calculate_mean(
-                    DataType::SpotEntry(key), start.into(), end.into(), AggregationMode::Median(())
                 );
 
             (volatility, decimals)

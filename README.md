@@ -1,40 +1,47 @@
-# Pragma Hackathon Template 🧪
+# Pragma Template 🧪
 
-This repository serves as a template for building with Pragma
+This contract has been taken from here - https://github.com/astraly-labs/pragma-hack
 
-> After deploying a contract, you need to call the initializer function (which can be called only one time per value set).
+## Set up your environment
 
-## Getting Started 🚀
+Follow [this](https://docs.starknet.io/documentation/quick_start/environment_setup/) guide to setup the environment for the project and install starkli
 
-You can find all the addresses to interact with, in the pragma [documentation](https://docs.pragmaoracle.com/docs/starknet/Cairo%201/data-feeds/consuming-data).
+Make sure you have exported the following environment variables:
 
-## Supported Assets 📈
+```bash
+export STARKNET_RPC=YOUR_RPC_URL
+export STARKNET_ACCOUNT=Path to your account
+export STARKNET_KEYSTORE=Path to your keystore
+```
 
-You can find the list of supported assets [here](https://docs.pragmaoracle.com/docs/starknet/Cairo%201/data-feeds/supported-assets) or on the [pragma homepage](https://pragmaoracle.com/).
+## Declare the contract
 
-## Cairo 0 & Cairo 1 💚
+```bash
+make declare
+```
 
-This template includes code for interacting both with pragma cairo 0 contracts and cairo 1 contracts.
-You can find more information about the migration in our [documentation](https://docs.pragmaoracle.com/docs/starknet/migration).
+This will return class hash. We will need this to deploy the contract.
 
-You can find related docs/examples :
+## Deploy the contract
 
-- [Cairo 1](https://docs.pragmaoracle.com/docs/starknet/Cairo%201/data-feeds/consuming-data)
-- [Cairo 0](https://docs.pragmaoracle.com/docs/starknet/Cairo%200/data-feeds/consuming-data)
+```bash
+make CLASS_HASH=<Replace with class hash that you received above> deploy
+```
 
-You can find the full cairo 1 repo [here](https://github.com/Astraly-Labs/pragma-oracle).
+This will return contract address. We will need this to interact with the contract.
 
-⚠️ Cairo 0 Contracts will be deprecated in the coming months.
-We recommend you to directly use the cairo 1 contracts.
+## Interact with the contract
 
-## Some useful ressources 📚
+First initialise the contract with the oracle and summary stats contract addresses
 
-- [Pragma documentation](https://docs.pragmaoracle.com/docs/starknet/Cairo%201/data-feeds/consuming-data)
-- [Computational Feeds](https://docs.pragmaoracle.com/docs/starknet/Cairo%201/computational-feeds/what-are-computational-feeds)
-- [Alexandria](https://github.com/keep-starknet-strange/alexandria)
-- [Cubit](https://github.com/influenceth/cubit)
-- [Cairo Book](https://book.cairo-lang.org/)
+```bash
+make CONTRACT_ADDRESS=<Replace with the contract address that you received above> initialise-pragma
+```
 
-## Feedback 📝
+This will return the transaction hash. You can check the status of the transaction using the transaction hash on [starkscan](https://sepolia.starkscan.co/)
 
-Any bug or feedback ? Please reach out to <matthias@pragmaoracle.com>
+Play with other functions with the commands listed in the [Makefile](Makefile)
+
+Note: the Pragma oracle contract addresses used in the Makefile are the ones deployed on the Sepolia testnet. You can replace them with the addresses of the contracts on mainnet if you want to interact with the mainnet contracts.
+
+Find more details about the Pragma oracle [here](https://docs.pragma.build/Resources/Cairo%201/data-feeds/consuming-data)

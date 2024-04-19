@@ -8,6 +8,8 @@ trait HackTemplateABI<TContractState> {
     fn check_eth_threshold(self: @TContractState, threshold: u32) -> bool;
     fn get_asset_price(self: @TContractState, asset_id: felt252) -> u128;
     fn realized_volatility(self: @TContractState) -> (u128, u32);
+    fn get_pragma_contract(self: @TContractState) -> ContractAddress;
+    fn get_summary_stats_contract(self: @TContractState) -> ContractAddress;
 }
 
 
@@ -50,6 +52,14 @@ mod HackTemplate {
             }
         }
 
+        fn get_pragma_contract(self: @ContractState) -> ContractAddress {
+            self.pragma_contract.read()
+        }
+
+        fn get_summary_stats_contract(self: @ContractState) -> ContractAddress {
+            self.summary_stats.read()
+        }
+
         fn check_eth_threshold(self: @ContractState, threshold: u32) -> bool {
             // Retrieve the oracle dispatcher
             let oracle_dispatcher = IPragmaABIDispatcher {
@@ -79,6 +89,7 @@ mod HackTemplate {
 
             return shifted_threshold <= output.price;
         }
+
         fn get_asset_price(self: @ContractState, asset_id: felt252) -> u128 {
             // Retrieve the oracle dispatcher
             let oracle_dispatcher = IPragmaABIDispatcher {
@@ -92,7 +103,7 @@ mod HackTemplate {
             return output.price;
         }
 
-        fn realized_volatility(self: @ContractState) -> (u128, u32) {
+        fn realized_volatility(self: @ContractState, startTimeInS: u128) -> (u128, u32) {
             let oracle_dispatcher = ISummaryStatsABIDispatcher {
                 contract_address: self.summary_stats.read()
             };
@@ -100,7 +111,7 @@ mod HackTemplate {
             let key = 'ETH/USD';
             let timestamp = starknet::get_block_timestamp();
 
-            let start = timestamp - 259200000; // 1 month ago
+            let start = timestamp - startTimeInS; // 1 month ago
             let end = timestamp; // now
 
             let num_samples = 200; // Maximum 200 because of Cairo Steps limit

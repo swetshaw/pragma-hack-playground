@@ -18,6 +18,6 @@ sierra = true
 casm = true
 
 # Emit Python-powered hints in order to run compiled CASM class with legacy Cairo VM.
-casm-add-pythonic-hints = true
+casm-add-pythonic-hints = false
 
 allowed-libfuncs-list.name = "audited"

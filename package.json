@@ -1,0 +1,21 @@
+{
+  "name": "pragma-hack",
+  "version": "1.0.0",
+  "description": "This repository serves as a template for building with Pragma",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "play": "npx ts-node src/scripts/playground.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "starknet": "^5.24.3",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7"
+  }
+}
